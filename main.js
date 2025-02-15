@@ -16,33 +16,75 @@ const svgScatter = d3.select("#scatterPlot")
 d3.csv("colleges.csv").then(data => {
     // 2: ... AND REFORMAT DATA
     data.forEach(d => {
-        d["earnings"] = +d["Median Earnings 8 years After Entry"];
+        d["earnings"] = +d["Median Earnings 8 years After Entry"]; // plus sign can transfer the value to number type
         d["debt"] = +d["Median Debt on Graduation"];
     })
 
+    console.log(data)
+
+    // the way you can trouble shooting for errors in data type
+    console.log(
+        "Data type of 'earnings': ",
+        typeof data[0]["earnings"]
+    )
     // 3: SET AXES SCALES
-    //Your code...
+    // 3.a X-scale: earnings
+    let xEarningScale = d3.scaleLinear()
+          .domain([0, d3.max(data, d => d.earnings)])
+          .range([0, width]);
+    // 3.b Y-scale: debt
+    let yDebtScale = d3.scaleLinear()
+          .domain([0, d3.max(data, d => d.debt)])
+          .range([height, 0]);
 
     // 4: PLOT POINTS
-    //Your code...
+    svgScatter.attr("class", "scatter")
+          .selectAll("circle")
+          .data(data)
+          .enter()
+          .append("circle")
+          // add attribute
+          .attr("cx", function(d) {
+                return xEarningScale(d["earnings"]);
+          })
+          .attr("cy", d => yDebtScale(d.debt))
+          .attr("r", 5)
+          ;
 
     // 5: AXES
     // Add x-axis
-    //Your code...
+    // If we don't do the transformation and make the axis at the top, we will get our x-axis at the top of our screen, but we usually want to put our title there, so not recommended to do so.
+    svgScatter.append("g")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(xEarningScale))
     
     // Add y-axis
-    //Your code...
-    
+    svgScatter.append("g")
+          .call(d3.axisLeft(yDebtScale))
 
     // 6: ADD LABELS
     // Add title
-    //Your code...
+    svgScatter.append("text")
+          .attr("class", "title")
+          .attr("x", width / 2)
+          .attr("y", -margin.top / 2)
+          .text("Median Earnings 8 Years After Entry vs. Median Debt upon Graduation");
+
     
     // Add x-axis label
-    //Your code...
+    svgScatter.append("text")
+          .attr("class", "axis-label")
+          .attr("x", width / 2)
+          .attr("y", height + margin.bottom / 2)
+          .text("Earnings ($)");
     
     // Add y-axis label
-    //Your code...
+    svgScatter.append("text")
+          .attr("class", "axis-label")
+          .attr("transform", "rotate(-90)")
+          .attr("y", -margin.left / 2)
+          .attr("x", -height / 2)
+          .text("Median Debt ($)");
     
 
     // [optional challenge] 7: ADD TOOL-TIP
